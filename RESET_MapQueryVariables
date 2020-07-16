@@ -1,0 +1,21 @@
+#CLASS 0
+
+#VAR Search_SQL {} {} VAR
+#VAR Search_MapQuery {} {} VAR
+#VAR Search_SearchItem {} {} VAR
+#VAR Search_ZoneName {} {} VAR
+#VAR Search_ZoneHint {} {} VAR
+#VAR Search_RoomName {} {} VAR
+#VAR Search_RoomID {} {} VAR
+#VAR Search_RoomNum {} {} VAR
+#VAR Search_RoomHint {} {} VAR
+#VAR Search_ZoneHint {} {} VAR
+#VAR Search_Results {} {} VAR
+
+#VAR FindHint_ZoneName {} {} VAR
+#VAR FindHint_ZoneHint {} {} VAR
+#VAR FindHint_ZoneHint_ID {} {} VAR
+#VAR FindHint_RoomName {} {} VAR
+#VAR FindHint_RoomID {} {} VAR
+#VAR FindHint_RoomHint {} {} VAR
+#CLASS 0
