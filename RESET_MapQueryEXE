@@ -1,0 +1,164 @@
+#CLASS 0
+
+$CLASS="Tools|MapQuery|EXE"
+
+#AL FindRoom {
+RESET_MapQuery_Variables
+$searchItem=""
+#CR
+#SW (%0) {
+  $searchItem=%0
+  #ECHO MapQuery on Param: $searchItem
+} (@FindHint_RoomName) {
+  $searchItem=@FindHint_RoomName
+  #ECHO MapQuery on FindHint_RoomName: $searchItem
+} {
+  $searchItem=%roomname()
+  #ECHO MapQuery on current room: $searchItem
+}
+//$searchItem=%trim(%replace($searchItem,"'","~'"))
+$searchItem=%trim($searchItem)
+$SQLQuery = %concat("[Name] LIKE '%",$searchItem,"%'")
+
+#VAR Search_SQL {$searchItem} {} VAR
+#VAR Search_SearchItem {$searchItem} {} VAR
+#VAR Search_SQL {$SQLQuery} {} VAR
+
+//$mapquery contains a list of RoomNum(s)
+#VAR Search_MapQuery {%mapquery(@Search_SQL)} {} VAR
+#FORALL @Search_MapQuery {
+  MapQuery_Lookup %i
+  MapQuery_AddItem "roomhint"
+}
+MapQuery_ShowResults
+
+} $CLASS
+
+#AL FindHere {
+FindRoom %roomname()
+} $CLASS
+
+#AL FindHint {
+RESET_MapQuery_Variables
+$searchItem=%lower(%0)
+#VAR Search_SQL {$searchItem} {} VAR
+$zone=""
+$room=""
+$hint=""
+$roomid=""
+$set=""
+
+#FORALL @ZoneHints {
+  $set=%lower(%i)
+  #IF ((%pos($searchItem,%item($set,1))) || (%pos($searchItem,%item($set,2))) || (%pos($searchItem,%item($set,3)))) {
+    #VAR Search_ZoneName {%item(%i,1)} {} VAR
+    #VAR Search_RoomName {} {} VAR
+    #VAR Search_ZoneHint {%item(%i,2)} {} VAR
+    #VAR Search_RoomID {%item(%i,3)} {} VAR
+    MapQuery_AddItem "zonehint"
+  }
+}
+
+#FORALL @RoomHints {
+  $set=%lower(%i)
+  #IF ((%pos($searchItem,%item($set,1))) || (%pos($searchItem,%item($set,2))) || (%pos($searchItem,%item($set,3))) || (%pos($searchItem,%item($set,4)))) {
+    #VAR Search_ZoneName {%item(%i,1)} {} VAR
+    #VAR Search_RoomName {%item(%i,2)} {} VAR
+    #VAR Search_RoomHint {%item(%i,3)} {} VAR
+    #VAR Search_RoomID {%item(%i,4)} {} VAR
+    MapQuery_AddItem "roomhint"
+  }
+}
+MapQuery_ShowResults
+} $CLASS
+
+#AL MapQuery_Lookup {
+$roomnum=%number(%0)
+#IF ($roomnum) {
+#VAR Search_ZoneName {%zonename(%roomzone($roomnum))} {} VAR
+#VAR Search_ZoneName {%trim(%replace(@Search_ZoneName,",","~,"))} {} VAR
+#VAR Search_RoomName {%roomname($roomnum)} {} VAR
+#VAR Search_RoomName {%trim(%replace(@Search_RoomName,",","~,"))} {} VAR
+#VAR Search_RoomID {%roomid($roomnum)} {} VAR
+#VAR Search_RoomID {%trim(%replace(@Search_RoomID,",","~,"))} {} VAR
+#VAR Search_RoomNum {$roomnum} {} VAR
+#VAR Search_RoomNum {%trim(%replace(@Search_RoomNum,",","~,"))} {} VAR
+} {#ECHO MapQuery_Lookup Error: Missing parameter ~<RoomNum~>}
+} $CLASS
+
+#AL MapQuery_AddItem {
+$param=%0
+$zone=%trim(%copy(@Search_ZoneName),1,40)
+$roomname=%trim(%copy(@Search_RoomName),1,40)
+$roomnum=%trim(%copy(@Search_RoomNum),1,6)
+$roomid=%trim(%copy(@Search_RoomID),1,13)
+$zonehint=%trim(%copy(@Search_ZoneHint),1,15)
+$roomhint=%trim(%copy(@Search_RoomHint),1,15)
+$result=""
+$result=%copy($zone,1,38)
+#LOOP (40 - %len($result)) {$result=%concat($result," ")}
+$result=%concat($result,%copy($roomname,1,38))
+#LOOP (80-%len($result)) {$result=%concat($result," ")}
+$result=%concat($result,%copy($roomnum,1,6))
+#LOOP (88-%len($result)) {$result=%concat($result," ")}
+$result=%concat($result,%copy($roomid,1,13))
+#LOOP (103-%len($result)) {$result=%concat($result," ")}
+#SW ($param="zonehint") {
+  $result = %concat($result,%copy($zonehint,1,15))
+} ($param="roomhint") {
+  $result = %concat($result,%copy($roomhint,1,15))}
+#ADDI Search_Results $result
+} $CLASS
+
+
+#AL FindHint_Show {
+#ECHO ZoneName: @FindHint_ZoneName
+#ECHO ZoneHint: @FindHint_ZoneHint
+#ECHO RoomName: @FindHint_RoomName
+#ECHO RoomID: @FindHint_RoomID
+#ECHO RoomHint: @FindHint_RoomHint
+} $CLASS
+
+
+#AL FindHint_Add {
+#CR;#ECHO Adding Zone/Room Hint:
+$zonename=@FindHint_ZoneName
+$roomname=@FindHint_RoomName
+
+$zonename=%prompt($zonename,"Confirm Zone Name:")
+$roomname=%prompt($roomname,"Confirm Room Name:")
+#VAR FindHint_ZoneName {$zonename} {} VAR
+#VAR FindHint_RoomName {$roomname} {} VAR
+#ECHO Zone: $zonename
+#ECHO Room: $roomname
+
+$zonehint=%prompt("",%concat("Enter Zone Hint for: ",$zonename))
+$zonehint_id=%prompt("","Enter Zone RoomID Hint:")
+#VAR FindHint_ZoneHint {$zonehint} {} VAR
+#VAR FindHint_ZoneHint_ID {$zonehint_id} {} VAR
+
+$roomid=%prompt("","Enter RoomID:")
+$roomhint=%prompt("","Enter RoomHint:")
+#VAR FindHint_RoomID {$roomid} {} VAR
+#VAR FindHint_RoomHint {$roomhint} {} VAR
+
+#ECHO Adding Data:
+//FindHint_Show
+FindHint_DisplayZone "Verbose"
+FindHint_DisplayRoom "Verbose"
+$yesno = %prompt("y / n","Add Data to Zone / Room lists?")
+#ECHO You answered $yesno
+#IF (%ismember(%lower($yesno),%lower("y|yes"))) {
+  #ECHO Adding to Lists...
+  #ADDI Zone_Names @FindHint_ZoneName
+  #IF ((@FindHint_ZoneHint) || (@FindHint_ZoneHint_ID)) {
+    #ADDI Zone_Hints %concat(@FindHint_ZoneName,"|",@FindHint_ZoneHint,"|",@FindHint_ZoneHint_ID)
+  }
+  #IF (((@FindHint_ZoneName) && (@FindHint_RoomName)) && ((@FindHint_RoomHint) || (@FindHint_RoomID))) {
+    #ADDI Room_Hints %concat(@FindHint_ZoneName,"|",@FindHint_RoomName,"|",@FindHint_RoomHint,"|",@FindHint_RoomID)
+  }
+  RESET_Rooms_SortLists
+}
+} $CLASS
+
+#CLASS 0
