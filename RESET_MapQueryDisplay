@@ -1,0 +1,104 @@
+#CLASS 0
+$CLASS="Tools|MapQuery|EXE"
+
+#AL MapQuery_ShowHeader {
+$display_header=%concat("ZONE")
+#LOOP (40-%len("ZONE")) {$display_header=%concat($display_header," ")}
+$display_header=%concat($display_header,"ROOM")
+#LOOP (40-%len("ROOM")) {$display_header=%concat($display_header," ")}
+$display_header=%concat($display_header,"ROOMNUM")
+#LOOP (8-%len("ROOMNUM")) {$display_header=%concat($display_header," ")}
+$display_header=%concat($display_header,"ROOMID")
+#LOOP (15-%len("ROOMID")) {$display_header=%concat($display_header," ")}
+$display_header=%concat($display_header,"HINT")
+#LOOP (17-%len("HINT")) {$display_header=%concat($display_header," ")}
+
+#ECHO %ansi(high,yellow)$display_header
+} $CLASS
+
+#AL MapQuery_ShowResults {
+#ECHO %CR%ansi(bold,yellow)MapQuery: %lower(@Search_SearchItem)
+#ECHO %ansi(bold,yellow)SQL Query: @Search_SQL
+MapQuery_ShowHeaderLine
+MapQuery_ShowHeader
+MapQuery_ShowHeaderLine
+#LOOP %numitems(@Search_Results) {#ECHO %ansi(white)%item(@Search_Results,%i)}
+MapQuery_ShowHeaderLine
+MapQuery_ShowHeader
+MapQuery_ShowHeaderLine
+#ECHO %ansi(bold,yellow)MapQuery: %lower(@Search_SearchItem)
+MapQuery_ShowHeaderLine
+} $CLASS
+
+#AL ShowLine {
+$display=""
+$i=%number(%0)
+#LOOP 1,$i {$display=%concat($display,"-")}
+#ECHO %ansi(magenta)$display
+} $CLASS
+
+#AL MapQuery_ShowHeaderLine {
+ShowLine 120
+} $CLASS
+
+
+#AL FindHint_DisplayZone {
+$player=%1;#IF (!$player) {$player="<Player>"}
+$zone=@FindHint_ZoneName
+$hint="";$roomid=""
+#IF (%ismember($zone,@ZoneNames)) {
+  #FORALL @ZoneHints {
+    #IF (%lower(%item(%i,1))=%lower($zone)) {
+      #VAR FindHint_ZoneHint {%item(%i,2)} {} VAR
+      #VAR FindHint_ZoneHint_ID {%item(%i,3)} {} VAR
+      #BREAK
+    }
+  }
+}
+$hint=@FindHint_ZoneHint
+$roomid=@FindHint_ZoneHint_ID
+$display=%concat($player," is in ",$zone,".")
+#IF ((%len($display)<=60) && (($hint) || ($roomid))) {
+  #LOOP %len($display),60 {$display=%concat($display," ")}
+}
+#IF (%len($hint)) {
+  $display=%concat($display," Hint: ",$hint)
+  #IF ($roomid) {$display=%concat($display," | ")}
+}
+#IF (%len($roomid)) {
+  $display=%concat($display,"RoomID: ",$roomid)
+}
+#IF ($hint || $roomid || (%lower($player)=%lower("verbose"))) {INFO {%ansi(white)$display}}
+} $CLASS
+
+
+#AL FindHint_DisplayRoom {
+$roomtype=%0;#IF (!$roomtype) {$roomtype="In the room"}
+$zone=@FindHint_ZoneName
+$room=@FindHint_RoomName
+$hint=""
+$roomid=""
+#FORALL @RoomHints {
+  #IF ((%lower(%item(%i,1))=%lower($zone)) && (%lower(%item(%i,2))=%lower($room))) {
+    #VAR FindHint_RoomHint {%item(%i,3)} {} VAR
+    #VAR FindHint_RoomID {%item(%i,4)} {} VAR
+    #BREAK
+  }
+}
+$hint=@FindHint_RoomHint
+$roomid=@FindHint_RoomID
+$display=%concat($roomtype,": ",$room,".")
+#IF ((%len($display)<=60) && (($hint) || ($roomid))) {
+  #LOOP %len($display),60 {$display=%concat($display," ")}
+}
+#IF (%len($hint)) {
+  $display=%concat($display," Hint: ",$hint)
+  #IF (%len($roomid)) {$display=%concat($display," | ")}
+}
+#IF (%len($roomid)) {
+  $display=%concat($display,"RoomID: ",$roomid)
+}
+#IF ($hint || $roomid || (%lower($roomtype)=%lower("verbose"))) {INFO {%ansi(white)$display}}
+} $CLASS
+
+#CLASS 0
