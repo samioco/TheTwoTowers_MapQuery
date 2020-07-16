@@ -1,0 +1,23 @@
+#CLASS 0
+$CLASS="Tools|MapQuery|Settings"
+RESET_MapQuery_Variables
+
+#TR MapQuery_ZoneHint {^%1 is in %2.} {
+RESET_MapQuery_Variables
+$player=%1;$zone = %2
+#VAR FindHint_ZoneName {$zone} {} VAR
+FindHint_DisplayZone $player
+#T+ MapQuery_RoomHint;#ALA "Alarm_FindHint" {+1} {#T- MapQuery_RoomHint}
+} $CLASS
+
+#TR MapQuery_RoomHint {({"In the room|On a mount in|In a boat"}): %2.} {
+$roomtype=%1
+$room=%2
+#VAR FindHint_RoomName {$room} {} VAR
+FindHint_DisplayRoom $roomtype
+#T- MapQuery_RoomHint
+} $CLASS
+#T- MapQuery_RoomHint
+
+
+#CLASS 0
