@@ -1,6 +1,5 @@
-#CLASS 0
+//RESET_MapQuerySettings#CLASS 0#AL RESET_MapQuerySettings {#CLASS 0
 $CLASS="Tools|MapQuery|Settings"
-RESET_MapQuery_Variables
 
 #TR MapQuery_ZoneHint {^%1 is in %2.} {
 RESET_MapQuery_Variables
@@ -21,3 +20,4 @@ FindHint_DisplayRoom $roomtype
 
 
 #CLASS 0
+} _MapQuery#CLASS 0

@@ -1,4 +1,4 @@
-#CLASS 0
+//RESET_MapQueryVariables#CLASS 0#AL RESET_MapQueryVariables {#CLASS 0
 
 #VAR Search_SQL {} {} VAR
 #VAR Search_MapQuery {} {} VAR
@@ -19,3 +19,4 @@
 #VAR FindHint_RoomID {} {} VAR
 #VAR FindHint_RoomHint {} {} VAR
 #CLASS 0
+} _MapQuery#CLASS 0
